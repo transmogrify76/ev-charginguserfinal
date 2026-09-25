@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    height: 100%;
+  }
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+}
+
+@layer components {
+  /* Subtle press feedback for tappable elements - the small thing that makes
+     an interface feel like a native app instead of a webpage. */
+  .btn-press {
+    @apply transition-transform duration-150 active:scale-[0.96];
+  }
+  .card-interactive {
+    @apply transition-all duration-200 active:scale-[0.98] hover:shadow-card;
+  }
+  .skeleton {
+    @apply relative overflow-hidden bg-ink-100 rounded-lg;
+    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 100%);
+    background-size: 400px 100%;
+    background-repeat: no-repeat;
+    animation: shimmer 1.6s infinite linear;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Scroll container fix
+ *
+ * Ionic's base stylesheet sets `body { position: fixed; height: 100%;
+ * overflow: hidden }` so that scrolling only ever happens inside components
+ * it controls (normally <IonContent>). Most screens in this app are plain
+ * divs, not <IonContent>, so without an explicit scroll container their
+ * content taller than one viewport was being silently clipped - nothing to
+ * scroll. Rather than patch every screen, #root/ion-app/.app-shell form one
+ * full-height chain and .app-shell itself is the real scroll container for
+ * the whole app, on every screen size.
+ * ------------------------------------------------------------------------- */
+#root {
+  height: 100%;
+}
+
+ion-app {
+  display: block;
+  height: 100%;
+}
+
+.app-shell {
+  height: 100%;
+  position: relative;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* <ion-router-outlet> ships as `position: absolute; inset: 0; contain:
+   layout size style`, i.e. a fixed-size box that never grows to fit its
+   content and (by default) has no scroll of its own - it's the actual
+   container every page renders into, so it needs to be the scroll region
+   directly rather than relying on an ancestor to pick up its overflow. */
+ion-router-outlet {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* ---------------------------------------------------------------------------
+ * Mobile app shell (desktop/tablet framing)
+ *
+ * The app itself is always mobile-first (every screen sizes off 100dvh and a
+ * max-w-* content column). On a phone this fills the viewport edge-to-edge
+ * as normal. On a tablet/desktop browser (or an embedded Capacitor webview
+ * that reports a wide viewport), we frame the whole app inside a fixed-width
+ * "device" column so it reads as a mobile app rather than a stretched
+ * desktop site. This only changes layout above the breakpoint - nothing here
+ * affects true small-viewport rendering.
+ * ------------------------------------------------------------------------- */
+@media (min-width: 641px) {
+  html,
+  body {
+    background: linear-gradient(160deg, #eef3e6 0%, #eef1f8 100%);
+  }
+
+  ion-app {
+    display: flex;
+    justify-content: center;
+    background: transparent;
+  }
+
+  .app-shell {
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 30px 70px -20px rgba(20, 24, 19, 0.45), 0 0 0 1px rgba(20, 24, 19, 0.06);
+    background: #fff;
+    /* `transform` (any non-none value) makes this element the containing
+       block for `position: fixed` descendants in modern browsers, so bottom
+       nav bars, sidebars, and full-screen modals stay confined to the phone
+       frame instead of spanning the real browser viewport. */
+    transform: translateZ(0);
+    position: relative;
+    isolation: isolate;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    margin-block: 28px;
+    border-radius: 2.25rem;
+    overflow: hidden;
+    height: calc(100dvh - 56px);
+  }
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+.animate-scan {
+  animation: scan 2s linear infinite;
+}
